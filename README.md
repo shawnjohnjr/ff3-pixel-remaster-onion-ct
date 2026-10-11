@@ -36,3 +36,12 @@ Cheat Engine table for **FINAL FANTASY III Pixel Remaster**, Steam build **20264
 維護方式請見 [MAINTENANCE.md](MAINTENANCE.md)。
 
 所有裝備的繁中／英文名稱與新增物品 ID，請查 [裝備 ID 對照表](EQUIPMENT_IDS.md) 或 [CSV](equipment_ids.csv)。
+
+## 獨立角色成長 CT
+
+- [全員角色 Lv99](FF3_PR_Level99_20264899.CT)：目前隊伍四人升至99，呼叫 FF3 原生升級處理器計算成長；不是 HP9999 修改器。
+- [已解鎖職業熟練度99](FF3_PR_UnlockedJobs99_20264899.CT)：只處理已解鎖且角色已有資料的職業，不解鎖新職業。取得新職業後可以再次執行。
+
+各檔案可獨立使用：地圖上載入 CT，勾選一次，回遊戲重新開啟狀態畫面並另存新欄位。取消勾選不會還原。
+
+兩份交付 CT 均已實際載入、連續執行兩次，並從隊伍重新讀回四人等級與24筆職業熟練度確認。未測戰鬥與存檔重讀。實作流程、踩雷與測試限制請看 [角色成長維護筆記](LEVELS_NOTES.md)。

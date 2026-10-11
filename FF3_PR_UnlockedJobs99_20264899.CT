@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='utf-8'?>
+<CheatTable CheatEngineTableVersion="45">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>1</ID>
+      <Description>"全員已解鎖職業熟練度99（地圖上執行一次）"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+local function find(ns,cls,name,signature)
+ local c=mono_findClass(ns,cls)
+ assert(c and c~=0,'Class missing: '..cls)
+ for _,m in ipairs(mono_class_enumMethods(c)) do
+  if m.name==name and (not signature or mono_method_getSignature(m.method)==signature) then return m.method end
+ end
+ error('Method missing: '..cls..'.'..name)
+end
+local function call(m,obj,args)
+ local r,e=mono_invoke_method(0,m,obj or 0,args or {})
+ assert(e==nil,tostring(e))
+ return r
+end
+local function instance(ns,cls)
+ local c=mono_findClass(ns,cls)
+ local obj=mono_object_new(c)
+ assert(obj and obj~=0,'Cannot create '..cls)
+ call(find(ns,cls,'.ctor',''),obj)
+ return obj
+end
+local function setup()
+ assert(getOpenedProcessID()~=0,'Attach to FINAL FANTASY III.exe first')
+ local base=getAddressSafe('GameAssembly.dll')
+ assert(base,'FF3 GameAssembly.dll missing')
+ local pe=base+readInteger(base+60)
+ assert(readInteger(pe+8)==1738594894 and readInteger(pe+80)==39026688,'This CT requires FF3 PR Steam build 20264899')
+ assert(LaunchMonoDataCollector(),'Mono collector unavailable')
+ local manager=call(find('Last.Management','UserDataManager','Instance',''))
+ assert(manager and manager~=0,'Load your save and stop on the map first')
+ return manager
+end
+
+local function method(o,n)
+ local c=mono_object_getClass(o)
+ while c and c~=0 do
+  for _,v in ipairs(mono_class_enumMethods(c)) do if v.name==n then return v.method end end
+  c=mono_class_getParent(c)
+ end
+ error('Missing method '..n)
+end
+local function g(o,n,args)return call(method(o,n),o,args) end
+local u=setup()
+local members={}
+for i=0,3 do local ch=g(u,'GetMemberData',{i});assert(ch and ch~=0,'Four party members required');members[#members+1]=ch end
+
+local function released()
+ local list=g(u,'get_ReleasedJobs');local ids={};local ordered={}
+ for i=0,g(list,'get_Count')-1 do local id=g(g(list,'get_Item',{i}),'get_Id');ids[id]=true;ordered[#ordered+1]=id end
+ table.sort(ordered);return ids,table.concat(ordered,',')
+end
+local allowed,before=released()
+for _,ch in ipairs(members) do
+ local jobid=g(ch,'get_JobId');local charlevel=g(g(ch,'get_Parameter'),'ConfirmedLevel')
+ local list=g(ch,'get_OwnedJobDataList');local n=0
+ for i=0,g(list,'get_Count')-1 do
+  local job=g(list,'get_Item',{i});local id=g(job,'get_Id')
+  if allowed[id] then
+   g(job,'set_CurrentProficiency',{9702});g(job,'set_Level',{99})
+   assert(g(job,'get_Level')==99 and g(job,'get_CurrentProficiency')==9702,'Job verification failed')
+   n=n+1
+  end
+ end
+ g(ch,'set_OwnedJobDataList',{list})
+ local client=instance('Last.Management','OwnedCharacterClient')
+ g(client,'SetOwnedCharacter',{ch})
+ assert(g(ch,'get_JobId')==jobid and g(g(ch,'get_Parameter'),'ConfirmedLevel')==charlevel,'Character state changed')
+ print('Character '..g(ch,'get_Id')..': '..n..' unlocked jobs verified at 99')
+end
+local _,after=released();assert(before==after,'Unlocked jobs changed')
+print('JOBS99 VERIFIED; unlocked IDs unchanged: '..after)
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols />
+</CheatTable>

@@ -64,3 +64,5 @@ Bundle 名称帶有版本雜湊，更新後應重新定位。部分匯出的 CSV
 目前僅針對 Steam build 20264899。腳本檢查 GameAssembly.dll 的 PE timestamp `1738594894` 與 SizeOfImage `39026688`，這是相容性檢查，並非完整檔案雜湊。更新後不能只刪除檢查：應重新確認 content ID、方法签名、數量語意，再完成遊戲測試後更新版本檢查。
 
 本版已整理的 [裝備 ID 對照表](EQUIPMENT_IDS.md) 可直接查繁中／英文名稱；也提供 [CSV](equipment_ids.csv)。請使用 `content_id`，不是 `weapon_or_armor_id`。
+
+角色等級與職業熟練度的独立 CT，請見 [成長腳本與踩雷紀錄](LEVELS_NOTES.md)。
