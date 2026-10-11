@@ -66,3 +66,5 @@ Bundle 名称帶有版本雜湊，更新後應重新定位。部分匯出的 CSV
 本版已整理的 [裝備 ID 對照表](EQUIPMENT_IDS.md) 可直接查繁中／英文名稱；也提供 [CSV](equipment_ids.csv)。請使用 `content_id`，不是 `weapon_or_armor_id`。
 
 角色等級與職業熟練度的独立 CT，請見 [成長腳本與踩雷紀錄](LEVELS_NOTES.md)。
+
+最大 HP 的附加值計算、角色提交與回讀驗證，請見 [HP 維護筆記](HP_NOTES.md)。
