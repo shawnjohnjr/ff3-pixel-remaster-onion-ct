@@ -287,7 +287,7 @@ local function setup()
 end
 
 local manager=setup()
-local items={{70,'Excalibur',4},{71,'Ragnarok',4},{76,'Masamune',4},{83,'Elder Staff',4},{88,'Omnirod',4},{161,'Ribbon',4},{178,'Black Robe',4},{179,'White Robe',4},{188,'Crystal Mail',4},{199,'Protect Ring',4},{201,'Crystal Gloves',4},{128,'Shuriken',99}}
+local items={{163,'Crystal Helm',4},{147,'Crystal Shield',4},{162,'Genji Helm',4},{187,'Genji Armor',4},{200,'Genji Gloves',4},{146,'Genji Shield',4},{70,'Excalibur',4},{71,'Ragnarok',4},{76,'Masamune',4},{83,'Elder Staff',4},{88,'Omnirod',4},{161,'Ribbon',4},{178,'Black Robe',4},{179,'White Robe',4},{188,'Crystal Mail',4},{199,'Protect Ring',4},{201,'Crystal Gloves',4},{128,'Shuriken',99}}
 local search=find('Last.Management','UserDataManager','SearchOwnedItem','System.Int32')
 local count=find('Last.Data.User','OwnedItemData','get_Count','')
 local name=find('Last.Data.User','OwnedItemData','get_Name','')
