@@ -1,0 +1,149 @@
+﻿content_id,類別,繁體中文,English,weapon_or_armor_id
+51,武器,匕首,Knife,2
+52,武器,短劍,Dagger,3
+53,武器,秘銀匕首,Mythril Knife,4
+54,武器,左手劍,Main Gauche,5
+55,武器,奧利哈康匕首,Orichalcum,6
+56,武器,空氣匕首,Air Knife,7
+57,武器,輝煌劍,Golden Sword,8
+58,武器,長劍,Longsword,9
+59,武器,屠屍劍,Wightslayer,10
+60,武器,秘銀劍,Mythril Sword,11
+61,武器,雷蛇劍,Serpent Sword,12
+62,武器,提爾鋒,Tyrfing,13
+63,武器,火蛇劍,Salamand Sword,14
+64,武器,冰凍劍,Freezing Blade,15
+65,武器,皇家劍,Royal Sword,16
+66,武器,嗜血劍,Blood Sword,17
+67,武器,古代劍,Ancient Sword,18
+68,武器,守護者,Defender,19
+69,武器,石化劍,Break Blade,20
+70,武器,石中劍,Excalibur,21
+71,武器,諸神黃昏,Ragnarok,22
+72,武器,洋蔥劍,Onion Sword,23
+73,武器,阿修羅,Ashura,24
+74,武器,虎徹,Kotetsu,25
+75,武器,菊一文字,Kiku-Ichimonji,26
+76,武器,正宗,Masamune,27
+77,武器,手杖,Staff,28
+78,武器,烈火杖,Fire Staff,29
+79,武器,寒冰杖,Ice Staff,30
+80,武器,閃光杖,Light Staff,31
+81,武器,泥人杖,Golem Staff,32
+82,武器,符文之杖,Rune Staff,33
+83,武器,長老之杖,Elder Staff,34
+84,武器,秘銀棒,Mythril Rod,35
+85,武器,寒冰棒,Ice Rod,36
+86,武器,閃光棒,Light Rod,37
+87,武器,烈火棒,Fire Rod,38
+88,武器,萬全棒,Omnirod,39
+89,武器,短弓,Bow,40
+90,武器,強弓,Great Bow,41
+91,武器,殺手弓,Killer Bow,42
+92,武器,符文弓,Rune Bow,43
+93,武器,與一之弓,Yoichi Bow,44
+94,武器,木箭,Wooden Arrow,45
+95,武器,聖箭,Holy Arrow,46
+96,武器,鐵箭,Iron Arrow,47
+97,武器,寒冰箭,Ice Arrow,48
+98,武器,烈火箭,Fire Arrow,49
+99,武器,閃雷箭,Light Arrow,50
+100,武器,梅杜莎之箭,Medusa Arrow,51
+101,武器,與一之箭,Yoichi Arrow,52
+102,武器,寒冰之書,Book of Ice,53
+103,武器,閃光之書,Book of Light,54
+104,武器,烈火之書,Book of Fire,55
+105,武器,寒冰之典,Tome of Ice,56
+106,武器,閃光之典,Tome of Light,57
+107,武器,烈火之典,Tome of Fire,58
+108,武器,雙節棍,Nunchaku,59
+109,武器,拐,Tonfa,60
+110,武器,三節棍,Sansetsukon,61
+111,武器,貓爪,Cat Claws,62
+112,武器,帝王指套,Kaiser Knuckles,63
+113,武器,飛龍爪,Wyvern Claws,64
+114,武器,妖精爪,Faerie Claws,65
+115,武器,地獄爪,Hellish Claws,66
+116,武器,雷神之鎚,Thorian Hammer,67
+117,武器,晨星鎚,Morning Star,68
+118,武器,海王鎚,Triton Hammer,69
+119,武器,戰斧,Battleaxe,70
+120,武器,雙戰斧,Dual Tomahawk,71
+121,武器,雙釘,Dual Haken,72
+122,武器,閃雷槍,Thunder Spear,73
+123,武器,疾風槍,Wind Spear,74
+124,武器,嗜血槍,Blood Lance,75
+125,武器,神聖槍,Holy Lance,76
+126,武器,迴力鏢,Boomerang,77
+127,武器,圓月輪,Moonring Blade,78
+128,武器,手裏劍,Shuriken,79
+129,武器,金剛石之鈴,Diamond Bell,80
+130,武器,大地之鈴,Earthen Bell,81
+131,武器,符文之鈴,Rune Bell,82
+132,武器,甜蜜豎琴,Madhura Harp,83
+133,武器,拉米亞豎琴,Lamia Harp,84
+134,武器,洛基豎琴,Loki Harp,85
+139,防具,皮盾,Leather Shield,5
+140,防具,秘銀盾,Mythril Shield,6
+141,防具,寒冰盾,Ice Shield,7
+142,防具,勇者之盾,Heroic Shield,8
+143,防具,惡魔之盾,Demon Shield,9
+144,防具,鑽石盾,Diamond Shield,10
+145,防具,聖盾,Aegis Shield,11
+146,防具,源氏之盾,Genji Shield,12
+147,防具,水晶盾,Crystal Shield,13
+148,防具,洋蔥之盾,Onion Shield,14
+149,防具,皮帽,Leather Cap,15
+150,防具,秘銀頭盔,Mythril Helm,16
+151,防具,角貝頭盔,Shell Helm,17
+152,防具,纏頭帶,Headband,18
+153,防具,寒冰頭盔,Ice Helm,19
+154,防具,羽飾帽子,Feathered Hat,20
+155,防具,學者帽子,Scholar Hat,21
+156,防具,黑頭巾,Black Cowl,22
+157,防具,脈輪頭帶,Chakra Band,23
+158,防具,龍盔,Dragon Helm,24
+159,防具,海盜頭盔,Viking Helm,25
+160,防具,鑽石頭盔,Diamond Helm,26
+161,防具,緞帶,Ribbon,27
+162,防具,源氏之盔,Genji Helm,28
+163,防具,水晶盔,Crystal Helm,29
+164,防具,洋蔥頭盔,Onion Helm,30
+165,防具,生鏽鎧甲,Rusty Mail,31
+166,防具,布衣,Vest,32
+167,防具,皮鎧,Leather Armor,33
+168,防具,秘銀鎧,Mythril Armor,34
+169,防具,魔道師服,Mage Robe,35
+170,防具,角貝鎧,Shell Armor,36
+171,防具,寒冰鎧,Ice Armor,37
+172,防具,學者服,Scholar Robe,38
+173,防具,功夫裝,Kenpo Gi,39
+174,防具,烈焰甲,Flame Mail,40
+175,防具,騎士鎧,Knight Armor,41
+176,防具,黑裝束,Black Garb,42
+177,防具,反射鎧甲,Reflective Mail,43
+178,防具,黑法袍,Black Robe,44
+179,防具,白法袍,White Robe,45
+180,防具,詩人短袍,Bard Vest,46
+181,防具,黑帶裝,Black Belt Gi,47
+182,防具,大地之衣,Gaia Vest,48
+183,防具,龍甲,Dragon Mail,49
+184,防具,海盜鎧,Viking Mail,50
+185,防具,惡魔鎧甲,Demon Mail,51
+186,防具,鑽石鎧甲,Diamond Mail,52
+187,防具,源氏之鎧,Genji Armor,53
+188,防具,水晶鎧,Crystal Mail,54
+189,防具,洋蔥鎧,Onion Armor,55
+190,防具,銅手鐲,Bronze Bracers,56
+191,防具,秘銀手鐲,Mythril Bracers,57
+192,防具,秘銀護手,Mythril Gloves,58
+193,防具,臂甲,Gauntlets,59
+194,防具,盜賊護手,Thief Gloves,60
+195,防具,符文手鐲,Rune Bracers,61
+196,防具,鑽石手鐲,Diamond Bracers,62
+197,防具,力量護臂,Power Bracers,63
+198,防具,鑽石護手,Diamond Gloves,64
+199,防具,守護戒指,Protect Ring,65
+200,防具,源氏之護手,Genji Gloves,66
+201,防具,水晶護手,Crystal Gloves,67
+202,防具,洋蔥臂甲,Onion Gauntlets,68

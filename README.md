@@ -34,3 +34,5 @@ Cheat Engine table for **FINAL FANTASY III Pixel Remaster**, Steam build **20264
 已在遊戲中透過交付 CT 執行並核對物品名稱與數量，重複執行維持各 4 件、手裏劍 99 枚。忍者／賢者的實際穿戴與戰鬥尚未測試。
 
 維護方式請見 [MAINTENANCE.md](MAINTENANCE.md)。
+
+所有裝備的繁中／英文名稱與新增物品 ID，請查 [裝備 ID 對照表](EQUIPMENT_IDS.md) 或 [CSV](equipment_ids.csv)。
