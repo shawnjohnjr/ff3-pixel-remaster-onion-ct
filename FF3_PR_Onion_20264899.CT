@@ -1,0 +1,252 @@
+<?xml version='1.0' encoding='utf-8'?>
+<CheatTable CheatEngineTableVersion="45">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>1</ID>
+      <Description>"四人轉洋蔥劍士並穿戴全套（地圖上執行一次）"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+local api=(function()
+local function find(ns,cls,name,signature)
+ local c=mono_findClass(ns,cls)
+ assert(c and c~=0,'Class missing: '..cls)
+ for _,m in ipairs(mono_class_enumMethods(c)) do
+  if m.name==name and (not signature or mono_method_getSignature(m.method)==signature) then return m.method end
+ end
+ error('Method missing: '..cls..'.'..name)
+end
+local function call(m,obj,args)
+ local r,e=mono_invoke_method(0,m,obj or 0,args or {})
+ assert(e==nil,tostring(e))
+ return r
+end
+local function instance(ns,cls)
+ local c=mono_findClass(ns,cls)
+ local obj=mono_object_new(c)
+ assert(obj and obj~=0,'Cannot create '..cls)
+ call(find(ns,cls,'.ctor',''),obj)
+ return obj
+end
+local function setup()
+ assert(getOpenedProcessID()~=0,'Attach to FINAL FANTASY III.exe first')
+ local base=getAddressSafe('GameAssembly.dll')
+ assert(base,'FF3 GameAssembly.dll missing')
+ local pe=base+readInteger(base+60)
+ assert(readInteger(pe+8)==1738594894 and readInteger(pe+80)==39026688,'This CT requires FF3 PR Steam build 20264899')
+ assert(LaunchMonoDataCollector(),'Mono collector unavailable')
+ local manager=call(find('Last.Management','UserDataManager','Instance',''))
+ assert(manager and manager~=0,'Load your save and stop on the map first')
+ return manager
+end
+local items={{72,1,'Onion Sword'},{148,2,'Onion Shield'},{164,4,'Onion Helm'},{189,3,'Onion Armor'},{202,5,'Onion Gauntlets'}}
+local function inventory(manager)
+ local search=find('Last.Management','UserDataManager','SearchOwnedItem','System.Int32')
+ local count=find('Last.Data.User','OwnedItemData','get_Count','')
+ local equipped=find('Last.Data.User','OwnedItemData','get_EquipCount','')
+ local result={}
+ for _,v in ipairs(items) do
+  local o=call(search,manager,{v[1]})
+  local n=0;local eq=0
+  if o and o~=0 then n=call(count,o);eq=call(equipped,o) end
+  result[v[1]]={object=o,count=n,equipped=eq}
+ end
+ return result
+end
+local function grant(manager)
+ local client=instance('Last.Management','OwnedItemClient')
+ local add=find('Last.Management','OwnedItemClient','AddOwnedItem','System.Int32,System.Int32')
+ local inv=inventory(manager)
+ for _,v in ipairs(items) do
+  local existing=inv[v[1]].count
+  if existing&lt;4 then call(add,client,{v[1],4-existing}) end
+ end
+ return inventory(manager)
+end
+local function equip(manager)
+ local gm=find('Last.Management','UserDataManager','GetMemberData','System.Int32')
+ local getid=find('Last.Data.User','OwnedCharacterData','get_Id','')
+ local getjob=find('Last.Data.User','OwnedCharacterData','get_JobId','')
+ local members={}
+ for i=0,3 do
+  local o=call(gm,manager,{i});assert(o and o~=0,'Four party members required')
+  members[#members+1]={object=o,id=call(getid,o),job=call(getjob,o)}
+ end
+ grant(manager)
+ local client=instance('Last.Management','OwnedCharacterClient')
+ local sw=find('Last.Management','OwnedCharacterClient','SwitchJob','System.Int32,System.Int32')
+ local set=find('Last.Management','OwnedCharacterClient','SetEquip','System.Int32,Last.Defaine.EquipSlotType,Last.Data.User.OwnedItemData')
+ local search=find('Last.Management','UserDataManager','SearchOwnedItem','System.Int32')
+ for _,ch in ipairs(members) do
+  if ch.job~=1 then call(sw,client,{ch.id,1}) end
+  for _,v in ipairs(items) do
+   local o=call(search,manager,{v[1]});assert(o and o~=0,'Missing '..v[3])
+   call(set,client,{ch.id,v[2],o})
+  end
+ end
+ return members
+end
+local function run(action)
+ local manager=setup()
+ local members
+ if action=='equip' then members=equip(manager) else grant(manager) end
+ local inv=inventory(manager)
+ for _,v in ipairs(items) do
+  local r=inv[v[1]]
+  print(v[3]..': total='..r.count..', equipped='..r.equipped)
+  if action=='equip' then assert(r.equipped==4,'Equipment verification failed: '..v[3]) end
+ end
+ if members then
+  local geteq=find('Last.Data.User','OwnedCharacterData','get_EquipmentData','')
+  local getjob=find('Last.Data.User','OwnedCharacterData','get_JobId','')
+  for _,ch in ipairs(members) do
+   assert(call(getjob,ch.object)==1,'Job verification failed')
+   local d=call(geteq,ch.object)
+   local getter
+   for _,m in ipairs(mono_class_enumMethods(mono_object_getClass(d))) do
+    if m.name=='get_Item' then getter=m.method;break end
+   end
+   assert(getter,'Equipment reader missing')
+   for _,v in ipairs(items) do
+    assert(call(find('Last.Data.User','OwnedItemData','get_Name',''),call(getter,d,{v[2]}))==call(find('Last.Data.User','OwnedItemData','get_Name',''),inv[v[1]].object),'Slot verification failed for character '..ch.id..': '..v[3])
+   end
+   print('Character '..ch.id..': Onion Knight, all 5 slots verified')
+  end
+ end
+ return true
+end
+return {run=run,setup=setup,find=find,call=call,inventory=inventory}
+
+end)()
+api.run('equip')
+{$asm}
+[DISABLE]
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>2</ID>
+      <Description>"只補足四人份洋蔥裝備"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+local api=(function()
+local function find(ns,cls,name,signature)
+ local c=mono_findClass(ns,cls)
+ assert(c and c~=0,'Class missing: '..cls)
+ for _,m in ipairs(mono_class_enumMethods(c)) do
+  if m.name==name and (not signature or mono_method_getSignature(m.method)==signature) then return m.method end
+ end
+ error('Method missing: '..cls..'.'..name)
+end
+local function call(m,obj,args)
+ local r,e=mono_invoke_method(0,m,obj or 0,args or {})
+ assert(e==nil,tostring(e))
+ return r
+end
+local function instance(ns,cls)
+ local c=mono_findClass(ns,cls)
+ local obj=mono_object_new(c)
+ assert(obj and obj~=0,'Cannot create '..cls)
+ call(find(ns,cls,'.ctor',''),obj)
+ return obj
+end
+local function setup()
+ assert(getOpenedProcessID()~=0,'Attach to FINAL FANTASY III.exe first')
+ local base=getAddressSafe('GameAssembly.dll')
+ assert(base,'FF3 GameAssembly.dll missing')
+ local pe=base+readInteger(base+60)
+ assert(readInteger(pe+8)==1738594894 and readInteger(pe+80)==39026688,'This CT requires FF3 PR Steam build 20264899')
+ assert(LaunchMonoDataCollector(),'Mono collector unavailable')
+ local manager=call(find('Last.Management','UserDataManager','Instance',''))
+ assert(manager and manager~=0,'Load your save and stop on the map first')
+ return manager
+end
+local items={{72,1,'Onion Sword'},{148,2,'Onion Shield'},{164,4,'Onion Helm'},{189,3,'Onion Armor'},{202,5,'Onion Gauntlets'}}
+local function inventory(manager)
+ local search=find('Last.Management','UserDataManager','SearchOwnedItem','System.Int32')
+ local count=find('Last.Data.User','OwnedItemData','get_Count','')
+ local equipped=find('Last.Data.User','OwnedItemData','get_EquipCount','')
+ local result={}
+ for _,v in ipairs(items) do
+  local o=call(search,manager,{v[1]})
+  local n=0;local eq=0
+  if o and o~=0 then n=call(count,o);eq=call(equipped,o) end
+  result[v[1]]={object=o,count=n,equipped=eq}
+ end
+ return result
+end
+local function grant(manager)
+ local client=instance('Last.Management','OwnedItemClient')
+ local add=find('Last.Management','OwnedItemClient','AddOwnedItem','System.Int32,System.Int32')
+ local inv=inventory(manager)
+ for _,v in ipairs(items) do
+  local existing=inv[v[1]].count
+  if existing&lt;4 then call(add,client,{v[1],4-existing}) end
+ end
+ return inventory(manager)
+end
+local function equip(manager)
+ local gm=find('Last.Management','UserDataManager','GetMemberData','System.Int32')
+ local getid=find('Last.Data.User','OwnedCharacterData','get_Id','')
+ local getjob=find('Last.Data.User','OwnedCharacterData','get_JobId','')
+ local members={}
+ for i=0,3 do
+  local o=call(gm,manager,{i});assert(o and o~=0,'Four party members required')
+  members[#members+1]={object=o,id=call(getid,o),job=call(getjob,o)}
+ end
+ grant(manager)
+ local client=instance('Last.Management','OwnedCharacterClient')
+ local sw=find('Last.Management','OwnedCharacterClient','SwitchJob','System.Int32,System.Int32')
+ local set=find('Last.Management','OwnedCharacterClient','SetEquip','System.Int32,Last.Defaine.EquipSlotType,Last.Data.User.OwnedItemData')
+ local search=find('Last.Management','UserDataManager','SearchOwnedItem','System.Int32')
+ for _,ch in ipairs(members) do
+  if ch.job~=1 then call(sw,client,{ch.id,1}) end
+  for _,v in ipairs(items) do
+   local o=call(search,manager,{v[1]});assert(o and o~=0,'Missing '..v[3])
+   call(set,client,{ch.id,v[2],o})
+  end
+ end
+ return members
+end
+local function run(action)
+ local manager=setup()
+ local members
+ if action=='equip' then members=equip(manager) else grant(manager) end
+ local inv=inventory(manager)
+ for _,v in ipairs(items) do
+  local r=inv[v[1]]
+  print(v[3]..': total='..r.count..', equipped='..r.equipped)
+  if action=='equip' then assert(r.equipped==4,'Equipment verification failed: '..v[3]) end
+ end
+ if members then
+  local geteq=find('Last.Data.User','OwnedCharacterData','get_EquipmentData','')
+  local getjob=find('Last.Data.User','OwnedCharacterData','get_JobId','')
+  for _,ch in ipairs(members) do
+   assert(call(getjob,ch.object)==1,'Job verification failed')
+   local d=call(geteq,ch.object)
+   local getter
+   for _,m in ipairs(mono_class_enumMethods(mono_object_getClass(d))) do
+    if m.name=='get_Item' then getter=m.method;break end
+   end
+   assert(getter,'Equipment reader missing')
+   for _,v in ipairs(items) do
+    assert(call(find('Last.Data.User','OwnedItemData','get_Name',''),call(getter,d,{v[2]}))==call(find('Last.Data.User','OwnedItemData','get_Name',''),inv[v[1]].object),'Slot verification failed for character '..ch.id..': '..v[3])
+   end
+   print('Character '..ch.id..': Onion Knight, all 5 slots verified')
+  end
+ end
+ return true
+end
+return {run=run,setup=setup,find=find,call=call,inventory=inventory}
+
+end)()
+api.run('grant')
+{$asm}
+[DISABLE]
+</AssemblerScript>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols />
+</CheatTable>

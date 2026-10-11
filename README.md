@@ -1,0 +1,26 @@
+# FF3 Pixel Remaster — Onion Equipment Cheat Table
+
+Cheat Engine table for **FINAL FANTASY III Pixel Remaster**, Steam build **20264899**. Tested on macOS using CrossOver and Cheat Engine.
+
+## 功能
+
+- **四人轉洋蔥劍士並穿戴全套**：目前隊伍四人轉成洋蔥劍士，每人穿戴洋蔥劍、盾、頭盔、鎧甲、臂甲。
+- **只補足四人份洋蔥裝備**：各種裝備總持有數補足至 4，不切換職業。
+
+## 使用方式
+
+1. 備份存檔，載入遊戲並停在地圖上。
+2. 在 Cheat Engine 選擇實際執行中的 `FINAL FANTASY III.exe`。
+3. 開啟 [FF3_PR_Onion_20264899.CT](FF3_PR_Onion_20264899.CT)。
+4. 勾選需要的選項一次。
+5. 回遊戲重新開啟裝備選單，另存至新的存檔欄位。
+
+取消勾選不會撤銷已套用的改動。再次執行請先取消再勾選。CT 已內嵌全部腳本，不需要額外 Lua 檔。版本檢查不符時會拒絕執行。
+
+## 測試範圍
+
+已實際載入並執行交付 CT，驗證五種裝備各總數 4、裝備數 4，以及四人職業與全部 20 個裝備欄位名稱。重複執行未增加數量。兩個選項均測試成功。
+
+尚未測試戰鬥、存檔重新載入或其他遊戲版本。
+
+此專案只提供 CT 腳本，不包含遊戲檔案或個人存檔。非官方專案。
