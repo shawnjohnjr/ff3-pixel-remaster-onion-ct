@@ -247,6 +247,68 @@ api.run('grant')
 [DISABLE]
 </AssemblerScript>
     </CheatEntry>
+    <CheatEntry>
+      <ID>3</ID>
+      <Description>"補齊忍者／賢者終盤裝備（各4件，手裏劍99枚；不切換職業）"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+local function find(ns,cls,name,signature)
+ local c=mono_findClass(ns,cls)
+ assert(c and c~=0,'Class missing: '..cls)
+ for _,m in ipairs(mono_class_enumMethods(c)) do
+  if m.name==name and (not signature or mono_method_getSignature(m.method)==signature) then return m.method end
+ end
+ error('Method missing: '..cls..'.'..name)
+end
+local function call(m,obj,args)
+ local r,e=mono_invoke_method(0,m,obj or 0,args or {})
+ assert(e==nil,tostring(e))
+ return r
+end
+local function instance(ns,cls)
+ local c=mono_findClass(ns,cls)
+ local obj=mono_object_new(c)
+ assert(obj and obj~=0,'Cannot create '..cls)
+ call(find(ns,cls,'.ctor',''),obj)
+ return obj
+end
+local function setup()
+ assert(getOpenedProcessID()~=0,'Attach to FINAL FANTASY III.exe first')
+ local base=getAddressSafe('GameAssembly.dll')
+ assert(base,'FF3 GameAssembly.dll missing')
+ local pe=base+readInteger(base+60)
+ assert(readInteger(pe+8)==1738594894 and readInteger(pe+80)==39026688,'This CT requires FF3 PR Steam build 20264899')
+ assert(LaunchMonoDataCollector(),'Mono collector unavailable')
+ local manager=call(find('Last.Management','UserDataManager','Instance',''))
+ assert(manager and manager~=0,'Load your save and stop on the map first')
+ return manager
+end
+
+local manager=setup()
+local items={{70,'Excalibur',4},{71,'Ragnarok',4},{76,'Masamune',4},{83,'Elder Staff',4},{88,'Omnirod',4},{161,'Ribbon',4},{178,'Black Robe',4},{179,'White Robe',4},{188,'Crystal Mail',4},{199,'Protect Ring',4},{201,'Crystal Gloves',4},{128,'Shuriken',99}}
+local search=find('Last.Management','UserDataManager','SearchOwnedItem','System.Int32')
+local count=find('Last.Data.User','OwnedItemData','get_Count','')
+local name=find('Last.Data.User','OwnedItemData','get_Name','')
+local add=find('Last.Management','OwnedItemClient','AddOwnedItem','System.Int32,System.Int32')
+local client=instance('Last.Management','OwnedItemClient')
+for _,v in ipairs(items) do
+ local o=call(search,manager,{v[1]})
+ local before=(o and o~=0) and call(count,o) or 0
+ if before&lt;v[3] then call(add,client,{v[1],v[3]-before}) end
+ o=call(search,manager,{v[1]})
+ assert(o and o~=0,'Missing '..v[2])
+ local after=call(count,o)
+ assert(after==math.max(before,v[3]),'Count verification failed: '..v[2])
+ print(v[2]..' ['..call(name,o)..']: '..before..' -&gt; '..after)
+end
+print('ENDGAME GRANT VERIFIED')
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+    </CheatEntry>
   </CheatEntries>
   <UserdefinedSymbols />
 </CheatTable>
