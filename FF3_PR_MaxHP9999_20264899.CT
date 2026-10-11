@@ -3,7 +3,7 @@
   <CheatEntries>
     <CheatEntry>
       <ID>1</ID>
-      <Description>"全員最大 HP 9999（不補血；地圖上執行一次）"</Description>
+      <Description>"全員最大 HP 9999（並補滿血；地圖上執行一次）"</Description>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 {$lua}
@@ -62,16 +62,17 @@ for i=0,3 do
  if before&lt;9999 then
   local extra=g(p,'get_AddtionalMaxHp')
   g(p,'set_AddtionalMaxHp',{extra+9999-before})
-  g(ch,'SetParameter',{p})
-  g(client,'SetOwnedCharacter',{ch})
  end
+ g(p,'set_CurrentHP',{9999})
+ g(ch,'SetParameter',{p})
+ g(client,'SetOwnedCharacter',{ch})
  print('Character '..expected[i].id..': MaxHP '..before..' -&gt; 9999')
 end
 for i=0,3 do
  local ch=g(u,'GetMemberData',{i});g(ch,'UpdateParameter');local p=g(ch,'get_Parameter');local old=expected[i]
  assert(g(p,'ConfirmedMaxHp')==9999,'MaxHP verification failed')
  assert(g(p,'ConfirmedLevel')==old.level and g(ch,'get_JobId')==old.job,'Level/job changed')
- assert(g(p,'get_CurrentHP')==old.current,'Current HP changed')
+ assert(g(p,'get_CurrentHP')==9999,'Healing verification failed')
  print('Fresh read character '..old.id..': MaxHP=9999, current HP='..g(p,'get_CurrentHP'))
 end
 print('MAXHP9999 VERIFIED')

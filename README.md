@@ -48,4 +48,4 @@ Cheat Engine table for **FINAL FANTASY III Pixel Remaster**, Steam build **20264
 
 ## 獨立最大 HP CT
 
-[全員最大 HP 9999](FF3_PR_MaxHP9999_20264899.CT)：只提高目前隊伍四人的最大 HP，不自動補血。使用後可在遊戲中休息或治療，再另存新欄位。[做法與測試範圍](HP_NOTES.md)。
+[全員最大 HP 9999](FF3_PR_MaxHP9999_20264899.CT)：將目前隊伍四人的最大 HP 提高至9999，並補滿目前HP至9999。使用後另存新欄位。[做法與測試範圍](HP_NOTES.md)。
