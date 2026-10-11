@@ -49,3 +49,9 @@ Cheat Engine table for **FINAL FANTASY III Pixel Remaster**, Steam build **20264
 ## 獨立最大 HP CT
 
 [全員最大 HP 9999](FF3_PR_MaxHP9999_20264899.CT)：將目前隊伍四人的最大 HP 提高至9999，並補滿目前HP至9999。使用後另存新欄位。[做法與測試範圍](HP_NOTES.md)。
+
+## 獨立新增洋蔥劍 CT
+
+[新增4把洋蔥劍](FF3_PR_Add4_OnionSwords_20264899.CT)：每次啟用增加4把（content ID 72），不自動裝備。取消再勾選會再增加4把；總持有量超過95時拒絕執行，避免無法完整加入4把。
+
+已實際執行並驗證總持有數4→8，使用者也確認遊戲中可用。在地圖上執行，完成後另存新欄位。

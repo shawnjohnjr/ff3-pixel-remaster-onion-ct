@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='utf-8'?>
+<CheatTable CheatEngineTableVersion="45">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>1</ID>
+      <Description>"新增4把洋蔥劍（每次重新勾選都會再加4把）"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+local function find(ns,cls,name,signature)
+ local c=mono_findClass(ns,cls)
+ assert(c and c~=0,'Class missing: '..cls)
+ for _,m in ipairs(mono_class_enumMethods(c)) do
+  if m.name==name and (not signature or mono_method_getSignature(m.method)==signature) then return m.method end
+ end
+ error('Method missing: '..cls..'.'..name)
+end
+local function call(m,obj,args)
+ local r,e=mono_invoke_method(0,m,obj or 0,args or {})
+ assert(e==nil,tostring(e))
+ return r
+end
+local function instance(ns,cls)
+ local c=mono_findClass(ns,cls)
+ local obj=mono_object_new(c)
+ assert(obj and obj~=0,'Cannot create '..cls)
+ call(find(ns,cls,'.ctor',''),obj)
+ return obj
+end
+local function setup()
+ assert(getOpenedProcessID()~=0,'Attach to FINAL FANTASY III.exe first')
+ local base=getAddressSafe('GameAssembly.dll')
+ assert(base,'FF3 GameAssembly.dll missing')
+ local pe=base+readInteger(base+60)
+ assert(readInteger(pe+8)==1738594894 and readInteger(pe+80)==39026688,'This CT requires FF3 PR Steam build 20264899')
+ assert(LaunchMonoDataCollector(),'Mono collector unavailable')
+ local manager=call(find('Last.Management','UserDataManager','Instance',''))
+ assert(manager and manager~=0,'Load your save and stop on the map first')
+ return manager
+end
+
+local manager=setup()
+local search=find('Last.Management','UserDataManager','SearchOwnedItem','System.Int32')
+local count=find('Last.Data.User','OwnedItemData','get_Count','')
+local obj=call(search,manager,{72})
+local before=(obj and obj~=0) and call(count,obj) or 0
+assert(before&lt;=95,'Not enough room to add exactly 4 Onion Swords (maximum 99).')
+local client=instance('Last.Management','OwnedItemClient')
+call(find('Last.Management','OwnedItemClient','AddOwnedItem','System.Int32,System.Int32'),client,{72,4})
+obj=call(search,manager,{72})
+assert(obj and obj~=0,'Onion Sword missing after grant')
+local after=call(count,obj)
+assert(after==before+4,'Onion Sword quantity verification failed')
+print('Onion Sword: '..before..' -&gt; '..after..' (+4 verified)')
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols />
+</CheatTable>
