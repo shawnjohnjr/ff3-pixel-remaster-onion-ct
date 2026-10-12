@@ -53,6 +53,49 @@ local u=setup()
 local members={}
 for i=0,3 do local ch=g(u,'GetMemberData',{i});assert(ch and ch~=0,'Four party members required');members[#members+1]=ch end
 
+-- Learning uses Content IDs; AddAbility requires master Ability IDs.
+local bardLessons={{10,358,108},{20,359,109},{30,361,111}}
+local client=instance('Last.Management','OwnedCharacterClient')
+local addAbility=find('Last.Management','OwnedCharacterClient','AddAbility','System.Int32,System.Int32')
+local function bardLevel(ch,allowed)
+ if not allowed[19] then return 0 end
+ local jobs=g(ch,'get_OwnedJobDataList')
+ for i=0,g(jobs,'get_Count')-1 do local job=g(jobs,'get_Item',{i});if g(job,'get_Id')==19 then return g(job,'get_Level') end end
+ return 0
+end
+local function ownedCounts(ch)
+ local list=g(ch,'get_OwnedAbilityList');local counts={}
+ for i=0,g(list,'get_Count')-1 do
+  local id=g(g(g(list,'get_Item',{i}),'get_Content'),'get_Id')
+  counts[id]=(counts[id] or 0)+1
+ end
+ return counts
+end
+local function syncBard(ch,allowed)
+ local level=bardLevel(ch,allowed);local present=ownedCounts(ch);local added=0
+ for _,lesson in ipairs(bardLessons) do
+  if level&gt;=lesson[1] and not present[lesson[2]] then
+   local a=call(addAbility,client,{g(ch,'get_Id'),lesson[3]})
+   assert(a and a~=0,'AddAbility failed for Bard song '..lesson[2])
+   assert(g(g(a,'get_Content'),'get_Id')==lesson[2],'Unexpected Bard song returned')
+   added=added+1
+  end
+ end
+ return added
+end
+local function verifyBard(ch,allowed)
+ local level=bardLevel(ch,allowed);local owned=ownedCounts(ch)
+ local learned=g(ch,'get_LearningAbilitys');local counts={}
+ for i=0,g(learned,'get_Count')-1 do local id=g(learned,'get_Item',{i});counts[id]=(counts[id] or 0)+1 end
+ for _,v in ipairs(bardLessons) do if level&gt;=v[1] then
+  assert(owned[v[2]]==1,'Missing or duplicate owned Bard song '..v[2])
+  assert(counts[v[2]] and counts[v[2]]&gt;=1,'Missing learned Bard song '..v[2])
+ end end
+ print('Character '..g(ch,'get_Id')..': Bard owned songs verified at job level '..level)
+end
+local original={}
+for i,ch in ipairs(members) do original[i]={job=g(ch,'get_JobId'),level=g(g(ch,'get_Parameter'),'ConfirmedLevel'),abilities=ownedCounts(ch)} end
+
 local function released()
  local list=g(u,'get_ReleasedJobs');local ids={};local ordered={}
  for i=0,g(list,'get_Count')-1 do local id=g(g(list,'get_Item',{i}),'get_Id');ids[id]=true;ordered[#ordered+1]=id end
@@ -71,10 +114,20 @@ for _,ch in ipairs(members) do
   end
  end
  g(ch,'set_OwnedJobDataList',{list})
- local client=instance('Last.Management','OwnedCharacterClient')
  g(client,'SetOwnedCharacter',{ch})
+ -- Persist job changes before AddAbility; never write the stale character back afterward.
+ local songs=syncBard(ch,allowed)
+ print('Bard songs added: '..songs)
  assert(g(ch,'get_JobId')==jobid and g(g(ch,'get_Parameter'),'ConfirmedLevel')==charlevel,'Character state changed')
  print('Character '..g(ch,'get_Id')..': '..n..' unlocked jobs verified at 99')
+end
+for i=0,3 do
+ local fresh=g(u,'GetMemberData',{i});verifyBard(fresh,allowed)
+ local prev=original[i+1];local now=ownedCounts(fresh)
+ assert(g(fresh,'get_JobId')==prev.job and g(g(fresh,'get_Parameter'),'ConfirmedLevel')==prev.level,'Fresh character state changed')
+ for id,count in pairs(prev.abilities) do assert(now[id]==count,'Existing ability changed: '..id) end
+ local list=g(fresh,'get_OwnedJobDataList')
+ for j=0,g(list,'get_Count')-1 do local job=g(list,'get_Item',{j});if allowed[g(job,'get_Id')] then assert(g(job,'get_Level')==99 and g(job,'get_CurrentProficiency')==9702,'Fresh job verification failed') end end
 end
 local _,after=released();assert(before==after,'Unlocked jobs changed')
 print('JOBS99 VERIFIED; unlocked IDs unchanged: '..after)
