@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='utf-8'?>
+<CheatTable CheatEngineTableVersion="45">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>1</ID>
+      <Description>"開啟召喚魔法勾選介面（只加入背包）"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+local function find(ns,cls,name,signature)
+ local c=mono_findClass(ns,cls)
+ assert(c and c~=0,'Class missing: '..cls)
+ for _,m in ipairs(mono_class_enumMethods(c)) do
+  if m.name==name and (not signature or mono_method_getSignature(m.method)==signature) then return m.method end
+ end
+ error('Method missing: '..cls..'.'..name)
+end
+local function call(m,obj,args)
+ local r,e=mono_invoke_method(0,m,obj or 0,args or {})
+ assert(e==nil,tostring(e))
+ return r
+end
+local function instance(ns,cls)
+ local c=mono_findClass(ns,cls)
+ local obj=mono_object_new(c)
+ assert(obj and obj~=0,'Cannot create '..cls)
+ call(find(ns,cls,'.ctor',''),obj)
+ return obj
+end
+local function setup()
+ assert(getOpenedProcessID()~=0,'Attach to FINAL FANTASY III.exe first')
+ local base=getAddressSafe('GameAssembly.dll')
+ assert(base,'FF3 GameAssembly.dll missing')
+ local pe=base+readInteger(base+60)
+ assert(readInteger(pe+8)==1738594894 and readInteger(pe+80)==39026688,'This CT requires FF3 PR Steam build 20264899')
+ assert(LaunchMonoDataCollector(),'Mono collector unavailable')
+ local manager=call(find('Last.Management','UserDataManager','Instance',''))
+ assert(manager and manager~=0,'Load your save and stop on the map first')
+ return manager
+end
+local spells={
+{326,"逃脫","Escape",1},
+{327,"嚴寒","Icen",2},
+{328,"電火花","Spark",3},
+{329,"灼熱","Heatra",4},
+{330,"超強擊","Hyper",5},
+{331,"災變","Catastro",6},
+{332,"利維亞","Leviath",7},
+{333,"巴哈姆爾","Bahamur",8},
+}
+
+if FF3SummonMagicUI then FF3SummonMagicUI.form.show(); return end
+local state={boxes={}}
+local form=createForm(false)
+state.form=form
+form.Caption='FF3 PR — 召喚魔法背包產生器'
+form.Width=860; form.Height=650
+form.Position='poScreenCenter'
+form.Font.Size=10
+local function label(text,x,y)
+ local c=createLabel(form);c.Caption=text;c.Left=x;c.Top=y;return c
+end
+label('勾選召喚魔法 → 設定目標數量 → 補足到背包（不自動學習）',18,16)
+label('請先載入存檔並停在地圖。執行後重新開啟道具／魔法選單。',18,42)
+for i,v in ipairs(spells) do
+ local row=i-1;local col=0
+ if col==0 then label('Lv '..v[4],18,80+row*42) end
+ local c=createCheckBox(form);c.Left=76+col*252;c.Top=77+row*42
+ c.Width=650;c.Height=28;c.Caption=v[2]..' / '..v[3];c.Checked=false
+ state.boxes[i]=c
+end
+local function button(text,x,y,w,fn)
+ local b=createButton(form);b.Caption=text;b.Left=x;b.Top=y;b.Width=w;b.Height=32;b.OnClick=fn;return b
+end
+button('全選',18,422,95,function() for _,c in ipairs(state.boxes) do c.Checked=true end end)
+button('清除選取',123,422,110,function() for _,c in ipairs(state.boxes) do c.Checked=false end end)
+label('每種補足至（1～99）',256,430)
+local quantity=createEdit(form);quantity.Left=435;quantity.Top=425;quantity.Width=58;quantity.Text='4'
+label('已有更多會保留；重複執行不累加。',18,468)
+local log=createMemo(form);log.Left=18;log.Top=495;log.Width=810;log.Height=108
+log.ReadOnly=true;log.ScrollBars='ssVertical';log.Lines.add('尚未執行。開啟介面和勾選項目不會修改遊戲。')
+local busy=false
+state.grant=button('補足勾選魔法',532,420,190,function()
+ if busy then return end
+ local target=tonumber(quantity.Text)
+ if not target or target~=math.floor(target) or target&lt;1 or target&gt;99 then showMessage('請輸入 1～99 的整數。');return end
+ local selected={}
+ for i,c in ipairs(state.boxes) do if c.Checked then selected[#selected+1]=spells[i] end end
+ if #selected==0 then showMessage('請先勾選至少一種召喚魔法。');return end
+ busy=true;state.grant.Enabled=false;log.Lines.clear()
+ local ok,err=pcall(function()
+  local manager=setup()
+  -- Resolve methods on every click: never reuse game pointers after a reload.
+  local search=find('Last.Management','UserDataManager','SearchOwnedItem','System.Int32')
+  local count=find('Last.Data.User','OwnedItemData','get_Count','')
+  local name=find('Last.Data.User','OwnedItemData','get_Name','')
+  local add=find('Last.Management','OwnedItemClient','AddOwnedItem','System.Int32,System.Int32')
+  local client=instance('Last.Management','OwnedItemClient')
+  for _,v in ipairs(selected) do
+   local o=call(search,manager,{v[1]})
+   local before=(o and o~=0) and call(count,o) or 0
+   assert(type(before)=='number' and before&gt;=0,'Invalid inventory count: '..v[3])
+   if before&lt;target then call(add,client,{v[1],target-before}) end
+   o=call(search,manager,{v[1]});assert(o and o~=0,'Missing item: '..v[3])
+   local after=call(count,o)
+   assert(after==math.max(before,target),'Count verification failed: '..v[3])
+   log.Lines.add(v[2]..' ['..tostring(call(name,o))..'] '..before..' → '..after)
+  end
+  log.Lines.add('完成：'..#selected..' 種召喚魔法，數量回讀驗證通過。請另存新欄位。')
+ end)
+ busy=false;state.grant.Enabled=true
+ if not ok then log.Lines.add('未完成：'..tostring(err));log.Lines.add('若已有成功項目會保留。排除原因後可重試，不會重複累加。') end
+end)
+form.OnClose=function() return caHide end
+FF3SummonMagicUI=state
+form.show()
+
+{$asm}
+[DISABLE]
+{$lua}
+if syntaxcheck then return end
+if FF3SummonMagicUI then FF3SummonMagicUI.form.destroy();FF3SummonMagicUI=nil end
+{$asm}
+</AssemblerScript>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols />
+</CheatTable>
