@@ -1,0 +1,376 @@
+<?xml version='1.0' encoding='utf-8'?>
+<CheatTable CheatEngineTableVersion="45">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>1</ID>
+      <Description>"傳奇寶物獵人：寶箱回收率100%（勾選即解鎖 Steam 成就）"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+local function find(ns,cls,name,signature)
+ local c=mono_findClass(ns,cls)
+ assert(c and c~=0,'Class missing: '..cls)
+ for _,m in ipairs(mono_class_enumMethods(c)) do
+  if m.name==name and (not signature or mono_method_getSignature(m.method)==signature) then return m.method end
+ end
+ error('Method missing: '..cls..'.'..name)
+end
+local function call(m,obj,args)
+ local r,e=mono_invoke_method(0,m,obj or 0,args or {})
+ assert(e==nil,tostring(e))
+ return r
+end
+local function instance(ns,cls)
+ local c=mono_findClass(ns,cls)
+ local obj=mono_object_new(c)
+ assert(obj and obj~=0,'Cannot create '..cls)
+ call(find(ns,cls,'.ctor',''),obj)
+ return obj
+end
+local function setup()
+ assert(getOpenedProcessID()~=0,'Attach to FINAL FANTASY III.exe first')
+ local base=getAddressSafe('GameAssembly.dll')
+ assert(base,'FF3 GameAssembly.dll missing')
+ local pe=base+readInteger(base+60)
+ assert(readInteger(pe+8)==1738594894 and readInteger(pe+80)==39026688,'This CT requires FF3 PR Steam build 20264899')
+ assert(LaunchMonoDataCollector(),'Mono collector unavailable')
+ local manager=call(find('Last.Management','UserDataManager','Instance',''))
+ assert(manager and manager~=0,'Load your save and stop on the map first')
+ return manager
+end
+
+local function method(o,n)
+ local c=mono_object_getClass(o)
+ while c and c~=0 do
+  for _,v in ipairs(mono_class_enumMethods(c)) do if v.name==n then return v.method end end
+  c=mono_class_getParent(c)
+ end
+ error('Missing method '..n)
+end
+local function g(o,n,args)return call(method(o,n),o,args) end
+local target='treasure_box_367'
+setup()
+local found=false
+local n=call(find('Steamworks','SteamUserStats','GetNumAchievements',''))
+for i=0,n-1 do
+ if call(find('Steamworks','SteamUserStats','GetAchievementName','System.UInt32'),0,{i})==target then found=true end
+end
+assert(found,'Requested Steam achievement not found: '..target)
+local ok=call(find('Steamworks','SteamUserStats','SetAchievement','System.String'),0,{target})
+assert(ok==true or ok==1,'Steam rejected achievement request: '..target)
+local stored=call(find('Steamworks','SteamUserStats','StoreStats',''))
+assert(stored==true or stored==1,'Steam rejected stats upload; retry when Steam is connected')
+local c=mono_findClass('Last.Management','SteamSDKManager');local sdk
+while c and c~=0 and not sdk do
+ for _,m in ipairs(mono_class_enumMethods(c)) do if m.name=='get_Instance' then sdk=call(m.method) end end
+ c=mono_class_getParent(c)
+end
+assert(sdk and sdk~=0,'Steam SDK instance unavailable for verification')
+local data=g(sdk,'GetAllAchievementsOnPlatform')
+assert(g(data,'get_Item',{target})==1,'Achievement readback failed: '..target)
+print('ACHIEVEMENT VERIFIED: '..target..'; Steam upload requested')
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>2</ID>
+      <Description>"道具獵人：所有隱藏道具（勾選即解鎖 Steam 成就）"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+local function find(ns,cls,name,signature)
+ local c=mono_findClass(ns,cls)
+ assert(c and c~=0,'Class missing: '..cls)
+ for _,m in ipairs(mono_class_enumMethods(c)) do
+  if m.name==name and (not signature or mono_method_getSignature(m.method)==signature) then return m.method end
+ end
+ error('Method missing: '..cls..'.'..name)
+end
+local function call(m,obj,args)
+ local r,e=mono_invoke_method(0,m,obj or 0,args or {})
+ assert(e==nil,tostring(e))
+ return r
+end
+local function instance(ns,cls)
+ local c=mono_findClass(ns,cls)
+ local obj=mono_object_new(c)
+ assert(obj and obj~=0,'Cannot create '..cls)
+ call(find(ns,cls,'.ctor',''),obj)
+ return obj
+end
+local function setup()
+ assert(getOpenedProcessID()~=0,'Attach to FINAL FANTASY III.exe first')
+ local base=getAddressSafe('GameAssembly.dll')
+ assert(base,'FF3 GameAssembly.dll missing')
+ local pe=base+readInteger(base+60)
+ assert(readInteger(pe+8)==1738594894 and readInteger(pe+80)==39026688,'This CT requires FF3 PR Steam build 20264899')
+ assert(LaunchMonoDataCollector(),'Mono collector unavailable')
+ local manager=call(find('Last.Management','UserDataManager','Instance',''))
+ assert(manager and manager~=0,'Load your save and stop on the map first')
+ return manager
+end
+
+local function method(o,n)
+ local c=mono_object_getClass(o)
+ while c and c~=0 do
+  for _,v in ipairs(mono_class_enumMethods(c)) do if v.name==n then return v.method end end
+  c=mono_class_getParent(c)
+ end
+ error('Missing method '..n)
+end
+local function g(o,n,args)return call(method(o,n),o,args) end
+local target='get_hidden_item'
+setup()
+local found=false
+local n=call(find('Steamworks','SteamUserStats','GetNumAchievements',''))
+for i=0,n-1 do
+ if call(find('Steamworks','SteamUserStats','GetAchievementName','System.UInt32'),0,{i})==target then found=true end
+end
+assert(found,'Requested Steam achievement not found: '..target)
+local ok=call(find('Steamworks','SteamUserStats','SetAchievement','System.String'),0,{target})
+assert(ok==true or ok==1,'Steam rejected achievement request: '..target)
+local stored=call(find('Steamworks','SteamUserStats','StoreStats',''))
+assert(stored==true or stored==1,'Steam rejected stats upload; retry when Steam is connected')
+local c=mono_findClass('Last.Management','SteamSDKManager');local sdk
+while c and c~=0 and not sdk do
+ for _,m in ipairs(mono_class_enumMethods(c)) do if m.name=='get_Instance' then sdk=call(m.method) end end
+ c=mono_class_getParent(c)
+end
+assert(sdk and sdk~=0,'Steam SDK instance unavailable for verification')
+local data=g(sdk,'GetAllAchievementsOnPlatform')
+assert(g(data,'get_Item',{target})==1,'Achievement readback failed: '..target)
+print('ACHIEVEMENT VERIFIED: '..target..'; Steam upload requested')
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3</ID>
+      <Description>"探求的冒險者：所有地方（勾選即解鎖 Steam 成就）"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+local function find(ns,cls,name,signature)
+ local c=mono_findClass(ns,cls)
+ assert(c and c~=0,'Class missing: '..cls)
+ for _,m in ipairs(mono_class_enumMethods(c)) do
+  if m.name==name and (not signature or mono_method_getSignature(m.method)==signature) then return m.method end
+ end
+ error('Method missing: '..cls..'.'..name)
+end
+local function call(m,obj,args)
+ local r,e=mono_invoke_method(0,m,obj or 0,args or {})
+ assert(e==nil,tostring(e))
+ return r
+end
+local function instance(ns,cls)
+ local c=mono_findClass(ns,cls)
+ local obj=mono_object_new(c)
+ assert(obj and obj~=0,'Cannot create '..cls)
+ call(find(ns,cls,'.ctor',''),obj)
+ return obj
+end
+local function setup()
+ assert(getOpenedProcessID()~=0,'Attach to FINAL FANTASY III.exe first')
+ local base=getAddressSafe('GameAssembly.dll')
+ assert(base,'FF3 GameAssembly.dll missing')
+ local pe=base+readInteger(base+60)
+ assert(readInteger(pe+8)==1738594894 and readInteger(pe+80)==39026688,'This CT requires FF3 PR Steam build 20264899')
+ assert(LaunchMonoDataCollector(),'Mono collector unavailable')
+ local manager=call(find('Last.Management','UserDataManager','Instance',''))
+ assert(manager and manager~=0,'Load your save and stop on the map first')
+ return manager
+end
+
+local function method(o,n)
+ local c=mono_object_getClass(o)
+ while c and c~=0 do
+  for _,v in ipairs(mono_class_enumMethods(c)) do if v.name==n then return v.method end end
+  c=mono_class_getParent(c)
+ end
+ error('Missing method '..n)
+end
+local function g(o,n,args)return call(method(o,n),o,args) end
+local target='area_visit'
+setup()
+local found=false
+local n=call(find('Steamworks','SteamUserStats','GetNumAchievements',''))
+for i=0,n-1 do
+ if call(find('Steamworks','SteamUserStats','GetAchievementName','System.UInt32'),0,{i})==target then found=true end
+end
+assert(found,'Requested Steam achievement not found: '..target)
+local ok=call(find('Steamworks','SteamUserStats','SetAchievement','System.String'),0,{target})
+assert(ok==true or ok==1,'Steam rejected achievement request: '..target)
+local stored=call(find('Steamworks','SteamUserStats','StoreStats',''))
+assert(stored==true or stored==1,'Steam rejected stats upload; retry when Steam is connected')
+local c=mono_findClass('Last.Management','SteamSDKManager');local sdk
+while c and c~=0 and not sdk do
+ for _,m in ipairs(mono_class_enumMethods(c)) do if m.name=='get_Instance' then sdk=call(m.method) end end
+ c=mono_class_getParent(c)
+end
+assert(sdk and sdk~=0,'Steam SDK instance unavailable for verification')
+local data=g(sdk,'GetAllAchievementsOnPlatform')
+assert(g(data,'get_Item',{target})==1,'Achievement readback failed: '..target)
+print('ACHIEVEMENT VERIFIED: '..target..'; Steam upload requested')
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>4</ID>
+      <Description>"魔物圖鑑・完全攻略篇：圖鑑100%（勾選即解鎖 Steam 成就）"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+local function find(ns,cls,name,signature)
+ local c=mono_findClass(ns,cls)
+ assert(c and c~=0,'Class missing: '..cls)
+ for _,m in ipairs(mono_class_enumMethods(c)) do
+  if m.name==name and (not signature or mono_method_getSignature(m.method)==signature) then return m.method end
+ end
+ error('Method missing: '..cls..'.'..name)
+end
+local function call(m,obj,args)
+ local r,e=mono_invoke_method(0,m,obj or 0,args or {})
+ assert(e==nil,tostring(e))
+ return r
+end
+local function instance(ns,cls)
+ local c=mono_findClass(ns,cls)
+ local obj=mono_object_new(c)
+ assert(obj and obj~=0,'Cannot create '..cls)
+ call(find(ns,cls,'.ctor',''),obj)
+ return obj
+end
+local function setup()
+ assert(getOpenedProcessID()~=0,'Attach to FINAL FANTASY III.exe first')
+ local base=getAddressSafe('GameAssembly.dll')
+ assert(base,'FF3 GameAssembly.dll missing')
+ local pe=base+readInteger(base+60)
+ assert(readInteger(pe+8)==1738594894 and readInteger(pe+80)==39026688,'This CT requires FF3 PR Steam build 20264899')
+ assert(LaunchMonoDataCollector(),'Mono collector unavailable')
+ local manager=call(find('Last.Management','UserDataManager','Instance',''))
+ assert(manager and manager~=0,'Load your save and stop on the map first')
+ return manager
+end
+
+local function method(o,n)
+ local c=mono_object_getClass(o)
+ while c and c~=0 do
+  for _,v in ipairs(mono_class_enumMethods(c)) do if v.name==n then return v.method end end
+  c=mono_class_getParent(c)
+ end
+ error('Missing method '..n)
+end
+local function g(o,n,args)return call(method(o,n),o,args) end
+local target='picture_book_225'
+setup()
+local found=false
+local n=call(find('Steamworks','SteamUserStats','GetNumAchievements',''))
+for i=0,n-1 do
+ if call(find('Steamworks','SteamUserStats','GetAchievementName','System.UInt32'),0,{i})==target then found=true end
+end
+assert(found,'Requested Steam achievement not found: '..target)
+local ok=call(find('Steamworks','SteamUserStats','SetAchievement','System.String'),0,{target})
+assert(ok==true or ok==1,'Steam rejected achievement request: '..target)
+local stored=call(find('Steamworks','SteamUserStats','StoreStats',''))
+assert(stored==true or stored==1,'Steam rejected stats upload; retry when Steam is connected')
+local c=mono_findClass('Last.Management','SteamSDKManager');local sdk
+while c and c~=0 and not sdk do
+ for _,m in ipairs(mono_class_enumMethods(c)) do if m.name=='get_Instance' then sdk=call(m.method) end end
+ c=mono_class_getParent(c)
+end
+assert(sdk and sdk~=0,'Steam SDK instance unavailable for verification')
+local data=g(sdk,'GetAllAchievementsOnPlatform')
+assert(g(data,'get_Item',{target})==1,'Achievement readback failed: '..target)
+print('ACHIEVEMENT VERIFIED: '..target..'; Steam upload requested')
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>5</ID>
+      <Description>"FF3 大師！（勾選即解鎖 Steam 成就）"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+local function find(ns,cls,name,signature)
+ local c=mono_findClass(ns,cls)
+ assert(c and c~=0,'Class missing: '..cls)
+ for _,m in ipairs(mono_class_enumMethods(c)) do
+  if m.name==name and (not signature or mono_method_getSignature(m.method)==signature) then return m.method end
+ end
+ error('Method missing: '..cls..'.'..name)
+end
+local function call(m,obj,args)
+ local r,e=mono_invoke_method(0,m,obj or 0,args or {})
+ assert(e==nil,tostring(e))
+ return r
+end
+local function instance(ns,cls)
+ local c=mono_findClass(ns,cls)
+ local obj=mono_object_new(c)
+ assert(obj and obj~=0,'Cannot create '..cls)
+ call(find(ns,cls,'.ctor',''),obj)
+ return obj
+end
+local function setup()
+ assert(getOpenedProcessID()~=0,'Attach to FINAL FANTASY III.exe first')
+ local base=getAddressSafe('GameAssembly.dll')
+ assert(base,'FF3 GameAssembly.dll missing')
+ local pe=base+readInteger(base+60)
+ assert(readInteger(pe+8)==1738594894 and readInteger(pe+80)==39026688,'This CT requires FF3 PR Steam build 20264899')
+ assert(LaunchMonoDataCollector(),'Mono collector unavailable')
+ local manager=call(find('Last.Management','UserDataManager','Instance',''))
+ assert(manager and manager~=0,'Load your save and stop on the map first')
+ return manager
+end
+
+local function method(o,n)
+ local c=mono_object_getClass(o)
+ while c and c~=0 do
+  for _,v in ipairs(mono_class_enumMethods(c)) do if v.name==n then return v.method end end
+  c=mono_class_getParent(c)
+ end
+ error('Missing method '..n)
+end
+local function g(o,n,args)return call(method(o,n),o,args) end
+local target='all_achievement'
+setup()
+local found=false
+local n=call(find('Steamworks','SteamUserStats','GetNumAchievements',''))
+for i=0,n-1 do
+ if call(find('Steamworks','SteamUserStats','GetAchievementName','System.UInt32'),0,{i})==target then found=true end
+end
+assert(found,'Requested Steam achievement not found: '..target)
+local ok=call(find('Steamworks','SteamUserStats','SetAchievement','System.String'),0,{target})
+assert(ok==true or ok==1,'Steam rejected achievement request: '..target)
+local stored=call(find('Steamworks','SteamUserStats','StoreStats',''))
+assert(stored==true or stored==1,'Steam rejected stats upload; retry when Steam is connected')
+local c=mono_findClass('Last.Management','SteamSDKManager');local sdk
+while c and c~=0 and not sdk do
+ for _,m in ipairs(mono_class_enumMethods(c)) do if m.name=='get_Instance' then sdk=call(m.method) end end
+ c=mono_class_getParent(c)
+end
+assert(sdk and sdk~=0,'Steam SDK instance unavailable for verification')
+local data=g(sdk,'GetAllAchievementsOnPlatform')
+assert(g(data,'get_Item',{target})==1,'Achievement readback failed: '..target)
+print('ACHIEVEMENT VERIFIED: '..target..'; Steam upload requested')
+
+{$asm}
+[DISABLE]
+</AssemblerScript>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols />
+</CheatTable>
